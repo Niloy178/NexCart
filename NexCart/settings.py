@@ -145,6 +145,6 @@ MESSAGE_TAGS = {
 # SMTP configaration
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'nuruzzaman.blog1@gmail.com'
-EMAIL_HOST_PASSWORD = 'ykxo fwsy eneu tnhx'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
