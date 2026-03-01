@@ -110,4 +110,69 @@ def activate(req, uidb64, token):
 
 def dashboard(req):
 
+
+
     return render(req, 'accounts/dashboard.html')
+
+def forgot_password(req):
+
+
+    if req.method == 'POST':
+        email = req.POST['email']
+        if Account.objects.filter(email=email).exists():
+            user = Account.objects.get(email__exact=email)
+            
+            # USER Activation
+            current_site = get_current_site(req)
+            mail_subject = "Reset password"
+            message = render_to_string("accounts/reset_password_email.html", {
+                'user': user,
+                'domain': current_site,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            to_email = email
+            send_email = EmailMessage(mail_subject, message, to=[to_email])
+            send_email.send()
+            messages.success(req, 'Reset password mail has been sent to your email.')
+            return redirect('login')
+
+
+        else:
+            messages.error(req, 'Account does not exist.')
+            return redirect('forgot_password')
+    
+    return render(req, 'accounts/forgot_password.html')
+
+def forgot_password_validate(req, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = Account._default_manager.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, Account.DoesNotExist):
+        user=None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        req.session['uid']=uid
+        messages.success(req, 'Please reset your password.')
+        return redirect('reset_password')
+    else:
+        messages.error(req, 'This link has been expired.')
+        return redirect('login')
+    
+def reset_password(req):
+    if req.method == 'POST':
+        password = req.POST['password']
+        confirm_password = req.POST['confirm_password']
+
+        if password == confirm_password:
+            uid = req.session.get('uid')
+            user = Account.objects.get(id=uid)
+            user.set_password(password)
+            user.save()
+            messages.success(req, 'Password reset successful.')
+            return redirect('home')
+        else:
+            messages.error(req, 'Passwords do not matched.')
+            return redirect('resetpassword')
+    else:
+        return render(req, 'accounts/reset_password.html')
