@@ -118,7 +118,7 @@ def login(req):
                 pass
 
             auth.login(req, user)
-            messages.success('You are now logged in.')
+            messages.success(req, 'You are now logged in.')
             url=req.META.get('HTTP_REFERER')
             try:
                 query=requests.utils.urlparse(url).query
